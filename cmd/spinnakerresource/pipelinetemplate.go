@@ -59,8 +59,8 @@ func (pt *PipelineTemplate) loadRemoteState() error {
 	return nil
 }
 
-// SaveRemoteState save local state to Spinnaker
-func (pt PipelineTemplate) SaveRemoteState() error {
+// SaveLocalState save local state to Spinnaker
+func (pt PipelineTemplate) SaveLocalState() error {
 	var localStateJSON interface{}
 	err := json.Unmarshal(pt.localState, &localStateJSON)
 	if err != nil {

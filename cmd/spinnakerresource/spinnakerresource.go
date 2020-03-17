@@ -27,7 +27,6 @@ func (r Resource) IsChanged() (bool, error) {
 	if err := json.Unmarshal(r.remoteState, &remoteJSON); err != nil {
 		return false, err
 	}
-
 	for k := range localJSON {
 		if _, exists := remoteJSON[k]; !exists {
 			return true, nil

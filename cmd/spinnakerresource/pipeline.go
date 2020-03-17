@@ -58,8 +58,8 @@ func (p *Pipeline) loadRemoteState() error {
 	return nil
 }
 
-// SaveRemoteState is used to save state remotely
-func (p Pipeline) SaveRemoteState() error {
+// SaveLocalState save local state to Spinnaker
+func (p Pipeline) SaveLocalState() error {
 	var jsonPayload interface{}
 	err := json.Unmarshal(p.localState, &jsonPayload)
 	if err != nil {
