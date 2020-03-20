@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/google/go-jsonnet"
+	"gopkg.in/yaml.v2"
 )
 
 // SpinnakerResources contains all the managed SpinnakerResources defined for Floodgate.
@@ -35,6 +35,20 @@ func CreateParser(librariesPath []string) *Parser {
 	return parser
 }
 
+func (p *Parser) loadFile(filePath string) (map[string]interface{}, error) {
+	fileExt := filepath.Ext(filePath)
+	switch fileExt {
+	case ".jsonnet":
+		return p.loadJsonnetFile(filePath)
+	case ".json":
+		return p.loadJSONFile(filePath)
+	case ".yaml":
+		return p.loadYAMLFile(filePath)
+	default:
+		return nil, fmt.Errorf("unsupported file extension: %q", fileExt)
+	}
+}
+
 func (p *Parser) loadJsonnetFile(filePath string) (map[string]interface{}, error) {
 	inputFile, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -49,6 +63,31 @@ func (p *Parser) loadJsonnetFile(filePath string) (map[string]interface{}, error
 	return output, nil
 }
 
+func (p *Parser) loadJSONFile(filePath string) (map[string]interface{}, error) {
+	inputFile, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	var output map[string]interface{}
+	if err := json.Unmarshal(inputFile, &output); err != nil {
+		return nil, err
+	}
+	return output, nil
+}
+
+func (p *Parser) loadYAMLFile(filePath string) (map[string]interface{}, error) {
+	inputFile, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	var output map[string]interface{}
+	if err := yaml.Unmarshal(inputFile, &output); err != nil {
+		return nil, err
+	}
+	return output, nil
+
+}
+
 func (p *Parser) loadDirectory(entrypoint string) ([]map[string]interface{}, error) {
 	var objects []map[string]interface{}
 	err := filepath.Walk(entrypoint,
@@ -58,12 +97,12 @@ func (p *Parser) loadDirectory(entrypoint string) ([]map[string]interface{}, err
 				log.Fatal(err)
 				return err
 			}
-			if f.IsDir() || !strings.HasSuffix(f.Name(), ".jsonnet") {
+			if f.IsDir() {
 				return nil
 			}
-			obj, err := p.loadJsonnetFile(path)
+			obj, err := p.loadFile(path)
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("Failed to load %q: %v", f.Name(), err)
 				return err
 			}
 			objects = append(objects, obj)
