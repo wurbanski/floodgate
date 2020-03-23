@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ghodss/yaml"
 	"github.com/google/go-jsonnet"
-	"gopkg.in/yaml.v2"
 )
 
 // SpinnakerResources contains all the managed SpinnakerResources defined for Floodgate.
@@ -44,8 +44,10 @@ func (p *Parser) loadFile(filePath string) (map[string]interface{}, error) {
 		return p.loadJSONFile(filePath)
 	case ".yaml":
 		return p.loadYAMLFile(filePath)
+	case ".yml":
+		return p.loadYAMLFile(filePath)
 	default:
-		return nil, fmt.Errorf("unsupported file extension: %q", fileExt)
+		return nil, fmt.Errorf("unsupported file extension %q", fileExt)
 	}
 }
 
@@ -85,31 +87,30 @@ func (p *Parser) loadYAMLFile(filePath string) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return output, nil
-
 }
 
 func (p *Parser) loadDirectory(entrypoint string) ([]map[string]interface{}, error) {
 	var objects []map[string]interface{}
 	err := filepath.Walk(entrypoint,
 		func(path string, f os.FileInfo, err error) error {
-			log.Print(f.Name())
 			if err != nil {
-				log.Fatal(err)
 				return err
 			}
 			if f.IsDir() {
 				return nil
 			}
 			obj, err := p.loadFile(path)
+			// We want to load only supported files, but don't want to stop loading after
+			// finding unsupported one
 			if err != nil {
 				log.Printf("Failed to load %q: %v", f.Name(), err)
-				return err
+				return nil
 			}
 			objects = append(objects, obj)
+			log.Printf("%s loaded", f.Name())
 			return nil
 		})
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 	return objects, nil

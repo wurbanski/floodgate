@@ -24,7 +24,7 @@ func TestParser_loadFile(t *testing.T) {
 				filePath: "testdata/test.jsonnet",
 			},
 			want: map[string]interface{}{
-				"name":     "test",
+				"name":     "testjsonnet",
 				"variable": false,
 			},
 			wantErr: false,
@@ -35,7 +35,7 @@ func TestParser_loadFile(t *testing.T) {
 				filePath: "testdata/test.json",
 			},
 			want: map[string]interface{}{
-				"name":     "test",
+				"name":     "testjson",
 				"variable": false,
 			},
 			wantErr: false,
@@ -46,7 +46,18 @@ func TestParser_loadFile(t *testing.T) {
 				filePath: "testdata/test.yaml",
 			},
 			want: map[string]interface{}{
-				"name":     "test",
+				"name":     "testyaml",
+				"variable": false,
+			},
+			wantErr: false,
+		},
+		{
+			name: "load yml file",
+			args: args{
+				filePath: "testdata/test.yml",
+			},
+			want: map[string]interface{}{
+				"name":     "testyml",
 				"variable": false,
 			},
 			wantErr: false,
@@ -54,7 +65,7 @@ func TestParser_loadFile(t *testing.T) {
 		{
 			name: "fail to load file with invalid extension",
 			args: args{
-				filePath: "testdata/test.invalid_ext",
+				filePath: "testdata/test.invext",
 			},
 			want:    nil,
 			wantErr: true,
@@ -62,7 +73,7 @@ func TestParser_loadFile(t *testing.T) {
 		{
 			name: "fail to load nonexistent file",
 			args: args{
-				filePath: "testdata/nonexistent.file",
+				filePath: "testdata/filethatshouldnotexist",
 			},
 			want:    nil,
 			wantErr: true,
@@ -98,7 +109,13 @@ func TestParser_loadDirectory(t *testing.T) {
 		want    []map[string]interface{}
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "succesfully load directory",
+			fields:  fields{},
+			args:    args{entrypoint: "testdata"},
+			want:    []map[string]interface{}{},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
